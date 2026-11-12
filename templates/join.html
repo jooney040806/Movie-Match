@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Join Room - MovieMatch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">MovieMatch.</a>
+    </nav>
+
+    <main class="home">
+        <div class="emoji">🍿</div>
+        <h1>Join a Room</h1>
+        <p>Enter the code your friend shared.</p>
+
+        <form action="/join" method="POST" class="join-form">
+            <input
+                type="text"
+                name="code"
+                placeholder="ROOM CODE"
+                maxlength="6"
+                pattern="[A-Za-z0-9]{6}"
+                required
+            >
+
+            <button class="primary" type="submit">
+                Join Room
+            </button>
+        </form>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <a href="/" class="back-link">Back to Home</a>
+    </main>
+</body>
+</html>

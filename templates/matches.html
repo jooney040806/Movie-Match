@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your Matches - MovieMatch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">MovieMatch.</a>
+    </nav>
+
+    <main class="matches-page">
+        <h1>It's a Match! ❤️</h1>
+        <p>Movies you both want to watch.</p>
+
+        <div class="movie-grid">
+            {% for movie in movies %}
+                <div class="match-card">
+                    {% if movie.poster_path %}
+                        <img
+                            src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}"
+                            alt="{{ movie.title }}"
+                        >
+                    {% endif %}
+
+                    <h3>{{ movie.title }}</h3>
+                    <p>⭐ {{ movie.vote_average | round(1) }}/10</p>
+                </div>
+            {% else %}
+                <p>No matches yet. Keep voting!</p>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('room', code=code) }}"
+           class="primary btn">
+            Back to Movies
+        </a>
+    </main>
+</body>
+</html>

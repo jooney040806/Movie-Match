@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MovieMatch Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">MovieMatch.</a>
+        <a href="{{ url_for('matches', code=code) }}" class="nav-link">
+            View Matches ❤️
+        </a>
+    </nav>
+
+    <main class="room-page">
+        <h1>Movie Night 🍿</h1>
+
+        <p>Share this code with your friend:</p>
+
+        <div class="room-code" id="roomCode">{{ code }}</div>
+
+        <button class="secondary" onclick="copyCode()">
+            Copy Room Code
+        </button>
+
+        <p id="copyMessage"></p>
+
+        <div id="movieCard" class="movie-card">
+            <img id="poster" alt="Movie poster">
+
+            <h2 id="movieTitle"></h2>
+            <p id="movieDescription"></p>
+
+            <div class="vote-buttons">
+                <button class="secondary" onclick="vote(false)">
+                    ✕ Skip
+                </button>
+
+                <button class="primary" onclick="vote(true)">
+                    ❤️ Like
+                </button>
+            </div>
+        </div>
+
+        <p id="statusMessage"></p>
+
+        <a href="{{ url_for('matches', code=code) }}"
+           class="primary btn">
+            See Our Matches
+        </a>
+    </main>
+
+    <script>
+        const movies = {{ movies | tojson }};
+        const roomCode = {{ code | tojson }};
+        const apiConfigured = {{ api_configured | tojson }};
+        let currentIndex = 0;
+        let voting = false;
+
+        function showMovie() {
+            const card = document.getElementById("movieCard");
+
+            if (currentIndex >= movies.length) {
+                card.style.display = "none";
+
+                document.getElementById("statusMessage").textContent =
+                    apiConfigured
+                    ? "No more movies! Check your matches."
+                    : "Add your TMDB token to load movies.";
+
+                return;
+            }
+
+            const movie = movies[currentIndex];
+
+            const poster = document.getElementById("poster");
+
+            if (movie.poster_path) {
+                poster.src = "https://image.tmdb.org/t/p/w500"
+                    + movie.poster_path;
+                poster.style.display = "block";
+            } else {
+                poster.style.display = "none";
+            }
+
+            document.getElementById("movieTitle").textContent =
+                movie.title;
+
+            document.getElementById("movieDescription").textContent =
+                movie.overview || "No description available.";
+        }
+
+        async function vote(liked) {
+            if (voting || currentIndex >= movies.length) return;
+
+            voting = true;
+
+            const movie = movies[currentIndex];
+
+            try {
+                const response = await fetch(
+                    "/vote/" + roomCode,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            movie_id: movie.id,
+                            liked: liked
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Vote failed");
+                }
+
+                currentIndex++;
+                showMovie();
+
+            } catch (error) {
+                alert("Could not save your vote. Try again.");
+            } finally {
+                voting = false;
+            }
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(roomCode)
+                .then(() => {
+                    document.getElementById("copyMessage")
+                        .textContent = "Code copied!";
+                })
+                .catch(() => {
+                    document.getElementById("copyMessage")
+                        .textContent = "Please copy the code above.";
+                });
+        }
+
+        showMovie();
+    </script>
+</body>
+</html>
